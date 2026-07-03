@@ -1,0 +1,18 @@
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Editor/IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Local env / secrets (not used by this static app, but harmless to exclude)
+.env
+.env.local
+
+# If you ever add tooling later
+node_modules/
+dist/

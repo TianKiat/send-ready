@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>Send Ready — Boulder Training</title>
+<meta name="theme-color" content="#1C1B19">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Send Ready">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<style>
+:root{
+  --bg:#1C1B19; --surface:#24221E; --surface-2:#2E2B25; --surface-3:#38342B;
+  --chalk:#F1ECE1; --chalk-dim:#C9C2B4; --stone:#8A8375;
+  --orange:#E2622B; --orange-dim:#B94F22; --orange-glow:rgba(226,98,43,.18);
+  --green:#7C9070; --green-dim:#5E7054;
+  --red:#C1443C;
+  --rope:#4A4438;
+  --radius:14px;
+  --ff-display: -apple-system, "SF Pro Display", "Segoe UI", system-ui, sans-serif;
+  --ff-body: -apple-system, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+  --ff-mono: "SF Mono", "Menlo", ui-monospace, monospace;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--chalk);font-family:var(--ff-body);}
+body{
+  padding-bottom:env(safe-area-inset-bottom);
+  padding-top:env(safe-area-inset-top);
+  min-height:100vh;
+  overscroll-behavior-y:none;
+}
+#app{max-width:560px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;position:relative;}
+button{font-family:inherit;cursor:pointer;}
+input,select,textarea{font-family:inherit;}
+::selection{background:var(--orange-glow);}
+
+/* ---------- Topbar ---------- */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 20px 10px;
+}
+.topbar .brand{
+  font-family:var(--ff-display); text-transform:uppercase; font-weight:800;
+  letter-spacing:.06em; font-size:15px; color:var(--chalk);
+  display:flex; align-items:center; gap:8px;
+}
+.brand .dot{width:9px;height:9px;border-radius:50%;background:var(--orange);display:inline-block;}
+.topbar .back{
+  background:none;border:none;color:var(--chalk-dim);font-size:14px;
+  display:flex;align-items:center;gap:4px;padding:6px 4px;
+}
+.topbar .icon-btn{
+  background:var(--surface);border:1px solid var(--surface-3);color:var(--chalk-dim);
+  width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;
+}
+
+/* ---------- Content ---------- */
+.content{flex:1;padding:6px 20px 100px;}
+h1.page-title{font-family:var(--ff-display);text-transform:uppercase;font-weight:800;font-size:26px;letter-spacing:.02em;margin:6px 0 4px;}
+p.page-sub{color:var(--stone);font-size:13.5px;margin:0 0 18px;line-height:1.5;}
+
+/* ---------- Home / route line ---------- */
+.route{position:relative;padding-left:34px;}
+.route::before{
+  content:"";position:absolute;left:13px;top:10px;bottom:10px;width:2px;
+  background:repeating-linear-gradient(to bottom, var(--rope) 0 6px, transparent 6px 12px);
+}
+.module-card{
+  position:relative;background:var(--surface);border:1px solid var(--surface-3);
+  border-radius:var(--radius); padding:16px 16px 16px 18px; margin-bottom:16px;
+  display:flex; flex-direction:column; gap:6px;
+}
+.module-card .clip{
+  position:absolute; left:-34px; top:18px; width:26px;height:26px;border-radius:50%;
+  background:var(--surface-2); border:2px solid var(--orange); color:var(--orange);
+  display:flex;align-items:center;justify-content:center; font-family:var(--ff-mono); font-size:12px; font-weight:700;
+}
+.module-card .m-top{display:flex; justify-content:space-between; align-items:flex-start;}
+.module-card h3{margin:0;font-family:var(--ff-display);text-transform:uppercase;letter-spacing:.03em;font-size:17px;}
+.module-card p{margin:2px 0 0;color:var(--stone);font-size:12.5px;line-height:1.45;}
+.module-card .m-meta{color:var(--chalk-dim);font-size:12px;font-family:var(--ff-mono);}
+.module-card .go{
+  background:var(--orange); color:#1C1408; border:none; border-radius:9px;
+  padding:8px 14px; font-weight:700; font-size:12.5px; letter-spacing:.02em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.module-card .go.secondary{background:transparent;border:1px solid var(--surface-3);color:var(--chalk-dim);}
+.card-actions{display:flex;gap:8px;margin-top:6px;}
+
+/* ---------- Buttons / fields ---------- */
+.btn{border-radius:10px;padding:11px 16px;font-weight:700;font-size:14px;border:1px solid var(--surface-3);background:var(--surface-2);color:var(--chalk);}
+.btn-primary{background:var(--orange);border-color:var(--orange);color:#1C1408;}
+.btn-ghost{background:transparent;border:1px solid var(--surface-3);color:var(--chalk-dim);}
+.btn-danger{background:transparent;border:1px solid var(--red);color:var(--red);}
+.btn-block{width:100%;display:block;text-align:center;}
+.btn-sm{padding:7px 10px;font-size:12px;border-radius:8px;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--stone);margin-bottom:6px;font-weight:700;}
+.field input[type=text], .field input[type=number], .field select, .field textarea{
+  width:100%; background:var(--surface-2); border:1px solid var(--surface-3); color:var(--chalk);
+  border-radius:9px; padding:11px 12px; font-size:15px;
+}
+.field textarea{resize:vertical;min-height:50px;}
+.row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.chip{display:inline-flex;align-items:center;gap:4px;background:var(--surface-2);border:1px solid var(--surface-3);color:var(--chalk-dim);border-radius:20px;padding:5px 11px;font-size:11.5px;font-weight:600;}
+.chip.on{background:var(--orange-glow);border-color:var(--orange);color:var(--orange);}
+
+/* ---------- Exercise list ---------- */
+.ex-card{background:var(--surface);border:1px solid var(--surface-3);border-radius:12px;padding:13px 14px;margin-bottom:10px;}
+.ex-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+.ex-name{font-weight:700;font-size:15px;}
+.ex-detail{color:var(--chalk-dim);font-size:12.5px;margin-top:3px;font-family:var(--ff-mono);}
+.ex-note{color:var(--stone);font-size:12px;margin-top:4px;font-style:italic;}
+.ex-controls{display:flex;gap:6px;flex-shrink:0;}
+.icon-sm{width:30px;height:30px;border-radius:8px;background:var(--surface-2);border:1px solid var(--surface-3);color:var(--chalk-dim);display:flex;align-items:center;justify-content:center;font-size:13px;}
+.pr-badge{display:inline-block;background:var(--green-dim);color:var(--chalk);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:2px 8px;border-radius:20px;margin-top:6px;}
+.add-ex{width:100%;border:1.5px dashed var(--surface-3);background:transparent;color:var(--stone);border-radius:12px;padding:14px;font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.03em;margin-top:6px;}
+
+.caution{background:rgba(193,68,60,.1);border:1px solid var(--red);color:#E7ADA8;border-radius:12px;padding:13px 14px;font-size:12.5px;line-height:1.5;margin-bottom:16px;}
+.caution b{color:var(--chalk);}
+
+/* ---------- Modal ---------- */
+.modal-back{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;z-index:50;}
+.modal{background:var(--surface);border-top-left-radius:20px;border-top-right-radius:20px;width:100%;max-width:560px;margin:0 auto;padding:20px 20px calc(24px + env(safe-area-inset-bottom));max-height:88vh;overflow-y:auto;}
+.modal h2{font-family:var(--ff-display);text-transform:uppercase;font-size:18px;margin:0 0 16px;letter-spacing:.03em;}
+.modal-actions{display:flex;gap:10px;margin-top:6px;}
+.modal-actions .btn{flex:1;}
+.pick-list{max-height:50vh;overflow-y:auto;margin-bottom:14px;}
+.pick-item{padding:12px 13px;border-radius:10px;background:var(--surface-2);border:1px solid var(--surface-3);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;}
+.pick-item .n{font-weight:600;font-size:14px;}
+.pick-item .d{color:var(--stone);font-size:11.5px;font-family:var(--ff-mono);}
+
+/* ---------- Bottom nav ---------- */
+.tabbar{
+  position:fixed; left:0; right:0; bottom:0; z-index:40;
+  background:rgba(28,27,25,.92); backdrop-filter:blur(10px);
+  border-top:1px solid var(--surface-3);
+  padding:10px 20px calc(10px + env(safe-area-inset-bottom));
+  display:flex; justify-content:center; gap:0;
+}
+.tabbar-inner{max-width:560px;width:100%;display:flex;justify-content:space-around;}
+.tab{background:none;border:none;color:var(--stone);display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;font-weight:700;padding:4px 10px;}
+.tab .ic{font-size:18px;}
+.tab.active{color:var(--orange);}
+
+/* ---------- Session ---------- */
+.session{position:fixed;inset:0;background:var(--bg);z-index:60;display:flex;flex-direction:column;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);}
+.session-top{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 8px;}
+.session-top .exit{background:none;border:none;color:var(--stone);font-size:14px;}
+.session-progress{display:flex;gap:4px;padding:0 20px 6px;flex-wrap:wrap;}
+.session-progress .seg{height:4px;flex:1;min-width:6px;border-radius:3px;background:var(--surface-3);}
+.session-progress .seg.done{background:var(--orange-dim);}
+.session-progress .seg.now{background:var(--orange);}
+.session-mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 24px;text-align:center;}
+.session-label{font-family:var(--ff-display);text-transform:uppercase;font-size:22px;letter-spacing:.02em;font-weight:800;margin-bottom:6px;}
+.session-label.rest{color:var(--green);}
+.session-sub{color:var(--chalk-dim);font-size:14px;margin-bottom:26px;min-height:20px;}
+.ring-wrap{position:relative;width:250px;height:250px;display:flex;align-items:center;justify-content:center;margin-bottom:30px;}
+.ring-wrap svg{width:100%;height:100%;transform:rotate(-90deg);}
+.ring-time{position:absolute;font-family:var(--ff-mono);font-size:52px;font-weight:700;color:var(--chalk);}
+.session-controls{display:flex;align-items:center;justify-content:center;gap:16px;padding:0 20px 30px;}
+.ctl-round{width:56px;height:56px;border-radius:50%;background:var(--surface-2);border:1px solid var(--surface-3);color:var(--chalk);display:flex;align-items:center;justify-content:center;font-size:18px;}
+.ctl-main{width:74px;height:74px;border-radius:50%;background:var(--orange);border:none;color:#1C1408;display:flex;align-items:center;justify-content:center;font-size:26px;}
+.manual-panel{width:100%;max-width:360px;}
+.manual-btn{width:100%;background:var(--orange);color:#1C1408;border:none;border-radius:14px;padding:18px;font-size:16px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;margin-top:6px;}
+.log-fields{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:16px;}
+.log-fields .field{margin-bottom:0;}
+.rpe-scale{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;margin-top:8px;}
+.rpe-dot{width:30px;height:30px;border-radius:8px;background:var(--surface-2);border:1px solid var(--surface-3);color:var(--chalk-dim);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+.rpe-dot.on{background:var(--orange);color:#1C1408;border-color:var(--orange);}
+
+/* ---------- PR tracker ---------- */
+.pr-item{background:var(--surface);border:1px solid var(--surface-3);border-radius:12px;padding:14px 15px;margin-bottom:10px;}
+.pr-item .p-top{display:flex;justify-content:space-between;align-items:center;}
+.pr-item h4{margin:0;font-size:15px;font-weight:700;}
+.pr-item .p-est{font-family:var(--ff-mono);color:var(--orange);font-weight:700;font-size:15px;}
+.pr-item .p-meta{color:var(--stone);font-size:12px;margin-top:4px;}
+.ready-badge{display:inline-flex;align-items:center;gap:5px;background:var(--green-dim);color:#EFF3EC;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;padding:4px 10px;border-radius:20px;margin-top:8px;}
+.pr-detail-chart{width:100%;height:120px;margin:16px 0 6px;}
+.pr-log-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--surface-3);font-size:13px;}
+.pr-log-row:last-child{border-bottom:none;}
+.pr-log-row .d{color:var(--stone);font-family:var(--ff-mono);font-size:11.5px;}
+.empty{color:var(--stone);font-size:13px;text-align:center;padding:30px 10px;}
+
+/* ---------- Settings ---------- */
+.settings-section{margin-bottom:26px;}
+.settings-section h3{font-family:var(--ff-display);text-transform:uppercase;font-size:13px;letter-spacing:.05em;color:var(--stone);margin:0 0 12px;}
+.unit-toggle{display:flex;gap:8px;}
+.unit-toggle button{flex:1;padding:10px;border-radius:9px;border:1px solid var(--surface-3);background:var(--surface-2);color:var(--chalk-dim);font-weight:700;}
+.unit-toggle button.on{background:var(--orange);border-color:var(--orange);color:#1C1408;}
+
+::-webkit-scrollbar{width:0;height:0;}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* ============================================================
+   SEND READY — boulder training PWA
+   Single-file app: state, exercise library, session engine, UI
+   ============================================================ */
+
+const STORAGE_KEY = "sendReadyState_v2";
+
+/* ---------------- Exercise Library (swap / add-from picker) ---------------- */
+const LIBRARY = {
+  warmup: [
+    {name:"Jumping Jacks", kind:"timed", timeSec:60, sets:1, restSec:0, note:"Get the heart rate up first."},
+    {name:"High Knees", kind:"timed", timeSec:45, sets:1, restSec:0},
+    {name:"Arm Circles", kind:"reps", reps:20, sets:1, restSec:0, note:"10 forward, 10 backward."},
+    {name:"Shoulder Rolls", kind:"reps", reps:10, sets:1, restSec:0},
+    {name:"Wrist & Elbow Circles", kind:"reps", reps:10, sets:1, restSec:0, note:"Each direction, both wrists."},
+    {name:"Leg Swings", kind:"reps", reps:20, sets:1, restSec:0, note:"10 per leg, front-back and side-side."},
+    {name:"Hip Circles", kind:"reps", reps:10, sets:1, restSec:0},
+    {name:"Scapular Pulls (Dead Hang)", kind:"reps", reps:10, sets:2, restSec:30, note:"Pull shoulder blades down without bending elbows."},
+    {name:"Band Pull-Aparts", kind:"reps", reps:15, sets:2, restSec:30},
+    {name:"Walking Lunge with Twist", kind:"reps", reps:20, sets:1, restSec:0, note:"10 per leg."},
+    {name:"Easy Boulder Ramp", kind:"timed", timeSec:600, sets:1, restSec:0, note:"4 up / 4 down: climb & downclimb easy problems, stepping up in difficulty."}
+  ],
+  hangboard: [
+    {name:"Progressive Warm-up Hangs", kind:"hangboard", hangSec:10, restBetweenHangsSec:30, repsPerSet:3, sets:1, restBetweenSetsSec:0, note:"Large edge / jug, bodyweight, easy effort."},
+    {name:"Repeaters 7:3 — Half Crimp", kind:"hangboard", hangSec:7, restBetweenHangsSec:3, repsPerSet:6, sets:4, restBetweenSetsSec:180, note:"Working edge ~20mm, ~50-70% intensity."},
+    {name:"Repeaters 7:3 — Open Hand", kind:"hangboard", hangSec:7, restBetweenHangsSec:3, repsPerSet:6, sets:4, restBetweenSetsSec:180, note:"Working edge ~20-25mm."},
+    {name:"Max Hangs — Half Crimp", kind:"hangboard", hangSec:10, restBetweenHangsSec:0, repsPerSet:1, sets:5, restBetweenSetsSec:180, note:"Near-max load; pick a load where failure would come ~3s after target."},
+    {name:"Density Hangs", kind:"hangboard", hangSec:30, restBetweenHangsSec:0, repsPerSet:1, sets:6, restBetweenSetsSec:120, note:"55-85% of max, sustained loading."}
+  ],
+  rehab: [
+    {name:"Wrist Flexor/Extensor Dynamic Stretch", kind:"reps", reps:20, sets:1, restSec:0, note:"10 each direction."},
+    {name:"6-Way Wrist ROM", kind:"timed", timeSec:6, sets:10, restSec:4, note:"Cycle: flexion, extension, radial, ulnar, pronation, supination."},
+    {name:"Isometric Ulnar Deviation Hold (TFCC)", kind:"timed", timeSec:20, sets:3, restSec:30, note:"Gentle intensity only — stop on sharp pain."},
+    {name:"Pronator Quadratus Activation", kind:"reps", reps:15, sets:2, restSec:30, note:"Slow forearm rotation, neutral wrist."},
+    {name:"Side-Lying External Rotation", kind:"reps", reps:12, sets:3, restSec:45, note:"Light weight, elbow pinned to side."},
+    {name:"Band Internal Rotation", kind:"reps", reps:12, sets:2, restSec:30},
+    {name:"Band External Rotation (Standing)", kind:"reps", reps:15, sets:2, restSec:30},
+    {name:"Reverse Fly", kind:"reps", reps:15, sets:2, restSec:30},
+    {name:"Sleeper Stretch", kind:"timed", timeSec:30, sets:3, restSec:30, note:"Lie on affected side, gently press forearm down."},
+    {name:"Doorway Chest Stretch", kind:"timed", timeSec:30, sets:2, restSec:15}
+  ],
+  strength: [
+    {name:"Weighted Pull-Up", kind:"strength", prTracked:true, workingWeight:0, unit:"kg", sets:3, repLow:8, repHigh:12, restSec:120, warmupEnabled:true},
+    {name:"Bench Press", kind:"strength", prTracked:true, workingWeight:0, unit:"kg", sets:3, repLow:8, repHigh:12, restSec:120, warmupEnabled:true},
+    {name:"Shoulder Press", kind:"strength", prTracked:true, workingWeight:0, unit:"kg", sets:3, repLow:8, repHigh:12, restSec:120, warmupEnabled:true},
+    {name:"Weighted Dip", kind:"strength", prTracked:true, workingWeight:0, unit:"kg", sets:3, repLow:8, repHigh:12, restSec:120, warmupEnabled:true},
+    {name:"Barbell Row", kind:"strength", prTracked:true, workingWeight:0, unit:"kg", sets:3, repLow:8, repHigh:12, restSec:120, warmupEnabled:true},
+    {name:"Deadlift", kind:"strength", prTracked:true, workingWeight:0, unit:"kg", sets:3, repLow:8, repHigh:12, restSec:150, warmupEnabled:true},
+    {name:"Face Pulls", kind:"reps", reps:15, sets:3, restSec:45},
+    {name:"Inverted Rows", kind:"reps", reps:12, sets:3, restSec:60},
+    {name:"Scapular Pull-ups", kind:"reps", reps:10, sets:3, restSec:45}
+  ],
+  cooldown: [
+    {name:"Forearm Flexor Stretch", kind:"timed", timeSec:30, sets:2, restSec:10, note:"Each arm."},
+    {name:"Forearm Extensor Stretch", kind:"timed", timeSec:30, sets:2, restSec:10, note:"Each arm."},
+    {name:"Lat Stretch", kind:"timed", timeSec:30, sets:2, restSec:10, note:"Each side."},
+    {name:"Shoulder Cross-Body Stretch", kind:"timed", timeSec:30, sets:2, restSec:10, note:"Each side."},
+    {name:"Doorway Chest Stretch", kind:"timed", timeSec:30, sets:2, restSec:10},
+    {name:"Hip Flexor Stretch", kind:"timed", timeSec:30, sets:2, restSec:10, note:"Each side."},
+    {name:"Quad Stretch", kind:"timed", timeSec:30, sets:2, restSec:10, note:"Each side."},
+    {name:"Hamstring Stretch", kind:"timed", timeSec:30, sets:2, restSec:10, note:"Each side."},
+    {name:"Child's Pose / Breathing Reset", kind:"timed", timeSec:60, sets:1, restSec:0}
+  ]
+};
+
+const MODULES = [
+  {key:"warmup", label:"Warm-Up", icon:"①", tag:"Get Ready", desc:"Pulse raiser, joint mobility & easy climbs before you touch anything hard."},
+  {key:"hangboard", label:"Fingerboard", icon:"②", tag:"Finger Strength", desc:"Progressive warm-up hangs into your chosen protocol."},
+  {key:"rehab", label:"Rehab", icon:"③", tag:"Wrist · TFCC · Cuff", desc:"Wrist ROM, TFCC-safe loading, and rotator cuff activation."},
+  {key:"strength", label:"Strength Training", icon:"④", tag:"PR Tracked", desc:"Weighted lifts with auto ramp-up sets, plus back & shoulder accessories."},
+  {key:"cooldown", label:"Cooldown", icon:"⑤", tag:"Wind Down", desc:"Static stretching for both climbing and lifting."}
+];
+
+/* ---------------- Default state ---------------- */
+function uid(){ return Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4); }
+
+function cloneEx(tpl){ return Object.assign({id: uid()}, tpl); }
+
+function defaultModuleSet(key, names){
+  const lib = LIBRARY[key];
+  return names.map(n => cloneEx(lib.find(e => e.name === n))).filter(Boolean);
+}
+
+function defaultState(){
+  return {
+    version: 2,
+    modules: {
+      warmup: defaultModuleSet("warmup", ["Jumping Jacks","Arm Circles","Wrist & Elbow Circles","Leg Swings","Scapular Pulls (Dead Hang)","Band Pull-Aparts","Easy Boulder Ramp"]),
+      hangboard: defaultModuleSet("hangboard", ["Progressive Warm-up Hangs","Repeaters 7:3 — Half Crimp"]),
+      rehab: defaultModuleSet("rehab", ["6-Way Wrist ROM","Isometric Ulnar Deviation Hold (TFCC)","Side-Lying External Rotation","Band External Rotation (Standing)","Sleeper Stretch"]),
+      strength: defaultModuleSet("strength", ["Weighted Pull-Up","Bench Press","Shoulder Press","Face Pulls","Inverted Rows"]),
+      cooldown: defaultModuleSet("cooldown", ["Forearm Flexor Stretch","Forearm Extensor Stretch","Lat Stretch","Shoulder Cross-Body Stretch","Child's Pose / Breathing Reset"])
+    },
+    settings: {
+      unit: "kg",
+      warmupPercents: [50,70,80],
+      warmupReps: [6,4,2],
+      defaultSets: 3,
+      defaultRepLow: 8,
+      defaultRepHigh: 12,
+      defaultRestSec: 120
+    },
+    prs: {} // exerciseId -> [{date, weight, reps, rpe}]
+  };
+}
+
+let state = loadState();
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return defaultState();
+    const parsed = JSON.parse(raw);
+    // shallow-fill any missing keys from defaults (forward compatibility)
+    const d = defaultState();
+    parsed.settings = Object.assign({}, d.settings, parsed.settings || {});
+    parsed.prs = parsed.prs || {};
+    parsed.modules = parsed.modules || d.modules;
+    for(const k of Object.keys(d.modules)){
+      if(!parsed.modules[k]) parsed.modules[k] = d.modules[k];
+    }
+    return parsed;
+  }catch(e){ return defaultState(); }
+}
+function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+/* ---------------- Router ---------------- */
+let modal = null;       // {type, ...}
+let sessionState = null; // active session object
+
+function nav(hash){ location.hash = hash; }
+window.addEventListener("hashchange", render);
+window.addEventListener("DOMContentLoaded", () => {
+  render();
+  if("serviceWorker" in navigator){
+    navigator.serviceWorker.register("service-worker.js").catch(()=>{});
+  }
+});
+
+function parseHash(){
+  const h = location.hash.replace(/^#\/?/, "");
+  const parts = h.split("/").filter(Boolean);
+  return parts.length ? parts : ["home"];
+}
+
+function render(){
+  const app = document.getElementById("app");
+  const parts = parseHash();
+  const route = parts[0];
+
+  if(sessionState){ app.innerHTML = renderSession(); attachSessionEvents(); return; }
+
+  let body = "";
+  if(route === "home") body = renderHome();
+  else if(route === "module") body = renderModule(parts[1]);
+  else if(route === "prs") body = renderPRList();
+  else if(route === "pr") body = renderPRDetail(parts[1]);
+  else if(route === "settings") body = renderSettings();
+  else body = renderHome();
+
+  app.innerHTML = body + renderTabbar(route) + (modal ? renderModal() : "");
+  attachEvents();
+}
+
+/* ---------------- Formatting helpers ---------------- */
+function fmtTime(sec){
+  sec = Math.max(0, Math.round(sec));
+  const m = Math.floor(sec/60), s = sec%60;
+  return m + ":" + String(s).padStart(2,"0");
+}
+function moduleMeta(key){
+  const exs = state.modules[key];
+  let totalSec = 0, count = exs.length;
+  exs.forEach(e => totalSec += estimateExerciseSeconds(e));
+  return {count, mins: Math.max(1, Math.round(totalSec/60))};
+}
+function estimateExerciseSeconds(e){
+  if(e.kind === "timed") return (e.timeSec*e.sets) + (e.restSec*(Math.max(0,e.sets-1)));
+  if(e.kind === "reps") return (e.sets*20) + (e.restSec*(Math.max(0,e.sets-1))); // ~20s assumed per rep set
+  if(e.kind === "hangboard") return e.sets*(e.repsPerSet*e.hangSec + (e.repsPerSet-1)*e.restBetweenHangsSec + e.restBetweenSetsSec);
+  if(e.kind === "strength"){
+    let t=0;
+    if(e.warmupEnabled) t += 3*(20+60);
+    t += e.sets*30 + (e.sets-1)*e.restSec;
+    return t;
+  }
+  return 30;
+}
+
+/* ---------------- Home ---------------- */
+function renderHome(){
+  let cards = MODULES.map(m => {
+    const meta = moduleMeta(m.key);
+    return `
+    <div class="module-card">
+      <div class="clip">${m.icon}</div>
+      <div class="m-top">
+        <div>
+          <h3>${m.label}</h3>
+          <p>${m.desc}</p>
+        </div>
+      </div>
+      <div class="m-top" style="align-items:center;margin-top:8px;">
+        <span class="m-meta">${meta.count} exercises · ~${meta.mins} min</span>
+        <div style="display:flex;gap:8px;">
+          <button class="go secondary" data-act="open-module" data-key="${m.key}">Edit</button>
+          <button class="go" data-act="start-session" data-key="${m.key}">Start</button>
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+
+  return `
+    <div class="topbar">
+      <div class="brand"><span class="dot"></span>Send Ready</div>
+      <button class="icon-btn" data-act="nav" data-to="#/settings">⚙</button>
+    </div>
+    <div class="content">
+      <h1 class="page-title">Session Plan</h1>
+      <p class="page-sub">Five modules, in order. Tap Start to run the timer, or Edit to swap exercises, reorder, or add your own.</p>
+      <div class="route">${cards}</div>
+    </div>`;
+}
+
+/* ---------------- Module editor ---------------- */
+function renderModule(key){
+  const mod = MODULES.find(m => m.key === key);
+  if(!mod) return renderHome();
+  const list = state.modules[key];
+
+  const caution = key === "rehab" ? `
+    <div class="caution"><b>Not medical advice.</b> These are general mobility & strengthening exercises used broadly for wrist/TFCC and shoulder health. Stop on sharp pain, and see a physiotherapist or doctor if symptoms persist, worsen, or you have an unresolved injury.</div>` : "";
+
+  const items = list.map((e, i) => renderExCard(e, key, i, list.length)).join("");
+
+  return `
+    <div class="topbar">
+      <button class="back" data-act="nav" data-to="#/home">‹ Modules</button>
+      <button class="icon-btn" data-act="start-session" data-key="${key}">▶</button>
+    </div>
+    <div class="content">
+      <h1 class="page-title">${mod.label}</h1>
+      <p class="page-sub">${mod.desc}</p>
+      ${caution}
+      ${items || '<p class="empty">No exercises yet — add one below.</p>'}
+      <button class="add-ex" data-act="add-exercise" data-key="${key}">+ Add Exercise</button>
+      <button class="btn btn-primary btn-block" style="margin-top:20px;" data-act="start-session" data-key="${key}">Start ${mod.label}</button>
+    </div>`;
+}
+
+function exDetailText(e){
+  if(e.kind === "timed") return `${e.sets} × ${fmtTime(e.timeSec)}${e.restSec ? " · rest " + fmtTime(e.restSec) : ""}`;
+  if(e.kind === "reps") return `${e.sets} × ${e.reps} reps${e.restSec ? " · rest " + fmtTime(e.restSec) : ""}`;
+  if(e.kind === "hangboard") return `${e.sets} sets × ${e.repsPerSet} reps · hang ${e.hangSec}s / rest ${e.restBetweenHangsSec}s`;
+  if(e.kind === "strength") return `${e.warmupEnabled ? "3 warm-up sets + " : ""}${e.sets} × ${e.repLow}-${e.repHigh} @ ${e.workingWeight || "—"}${e.unit}`;
+  return "";
+}
+
+function renderExCard(e, key, i, len){
+  const isStrength = e.kind === "strength";
+  return `
+  <div class="ex-card" data-id="${e.id}">
+    <div class="ex-top">
+      <div>
+        <div class="ex-name">${e.name}</div>
+        <div class="ex-detail">${exDetailText(e)}</div>
+        ${e.note ? `<div class="ex-note">${e.note}</div>` : ""}
+        ${isStrength ? `<span class="pr-badge">PR Tracked</span>` : ""}
+      </div>
+      <div class="ex-controls">
+        <button class="icon-sm" data-act="move-up" data-key="${key}" data-id="${e.id}" ${i===0?"disabled":""}>↑</button>
+        <button class="icon-sm" data-act="move-down" data-key="${key}" data-id="${e.id}" ${i===len-1?"disabled":""}>↓</button>
+        <button class="icon-sm" data-act="edit-exercise" data-key="${key}" data-id="${e.id}">✎</button>
+        <button class="icon-sm" data-act="delete-exercise" data-key="${key}" data-id="${e.id}">✕</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ---------------- Tabbar ---------------- */
+function renderTabbar(route){
+  const tabs = [
+    {to:"#/home", ic:"⛰", label:"Modules", match:"home"},
+    {to:"#/prs", ic:"📈", label:"PRs", match:"prs"},
+    {to:"#/settings", ic:"⚙", label:"Settings", match:"settings"}
+  ];
+  return `<div class="tabbar"><div class="tabbar-inner">${tabs.map(t => `
+    <button class="tab ${route===t.match || (t.match==='home' && route==='module') || (t.match==='prs' && route==='pr') ? 'active':''}" data-act="nav" data-to="${t.to}">
+      <span class="ic">${t.ic}</span>${t.label}
+    </button>`).join("")}</div></div>`;
+}
+
+/* ============================================================
+   EXERCISE EDIT / ADD / SWAP MODAL
+   ============================================================ */
+function openEditModal(key, id){
+  const list = state.modules[key];
+  const ex = list.find(e => e.id === id);
+  modal = {type:"edit", key, id, draft: JSON.parse(JSON.stringify(ex))};
+  render();
+}
+function openAddModal(key){
+  modal = {type:"pick", key};
+  render();
+}
+
+function renderModal(){
+  if(!modal) return "";
+  if(modal.type === "pick") return renderPickModal();
+  if(modal.type === "edit") return renderEditModal();
+  if(modal.type === "customNew") return renderEditModal(true);
+  return "";
+}
+
+function renderPickModal(){
+  const lib = LIBRARY[modal.key];
+  const items = lib.map(t => `
+    <div class="pick-item" data-act="pick-lib" data-name="${t.name.replace(/"/g,'&quot;')}">
+      <div><div class="n">${t.name}</div><div class="d">${exDetailText(Object.assign({id:'x'},t))}</div></div>
+      <button class="btn btn-sm btn-ghost">Add</button>
+    </div>`).join("");
+  return `
+  <div class="modal-back" data-act="close-modal">
+    <div class="modal" onclick="event.stopPropagation()">
+      <h2>Add Exercise</h2>
+      <div class="pick-list">${items}</div>
+      <button class="btn btn-block" data-act="new-custom" data-key="${modal.key}">+ Create Custom Exercise</button>
+      <button class="btn btn-ghost btn-block" style="margin-top:8px;" data-act="close-modal">Cancel</button>
+    </div>
+  </div>`;
+}
+
+function blankExercise(key){
+  const kindDefault = key === "strength" ? "strength" : key === "hangboard" ? "hangboard" : "reps";
+  const base = {id: uid(), name:"", kind:kindDefault, note:""};
+  if(kindDefault === "timed") return Object.assign(base,{timeSec:30,sets:2,restSec:15});
+  if(kindDefault === "reps") return Object.assign(base,{reps:10,sets:2,restSec:30});
+  if(kindDefault === "hangboard") return Object.assign(base,{hangSec:7,restBetweenHangsSec:3,repsPerSet:6,sets:3,restBetweenSetsSec:120});
+  if(kindDefault === "strength") return Object.assign(base,{prTracked:true,workingWeight:0,unit:state.settings.unit,sets:state.settings.defaultSets,repLow:state.settings.defaultRepLow,repHigh:state.settings.defaultRepHigh,restSec:state.settings.defaultRestSec,warmupEnabled:true});
+  return base;
+}
+
+function renderEditModal(isNew){
+  const key = modal.key;
+  const draft = modal.draft || blankExercise(key);
+  if(!modal.draft) modal.draft = draft;
+
+  const kindOptions = ["timed","reps","hangboard","strength"];
+  const kindLabel = {timed:"Timed Hold", reps:"Rep-Based", hangboard:"Hangboard Interval", strength:"Weighted Strength (PR)"};
+
+  let fields = "";
+  if(draft.kind === "timed"){
+    fields = `
+      <div class="row-2">
+        <div class="field"><label>Seconds per set</label><input type="number" data-f="timeSec" value="${draft.timeSec}"></div>
+        <div class="field"><label>Sets</label><input type="number" data-f="sets" value="${draft.sets}"></div>
+      </div>
+      <div class="field"><label>Rest between sets (sec)</label><input type="number" data-f="restSec" value="${draft.restSec}"></div>`;
+  } else if(draft.kind === "reps"){
+    fields = `
+      <div class="row-2">
+        <div class="field"><label>Reps per set</label><input type="number" data-f="reps" value="${draft.reps}"></div>
+        <div class="field"><label>Sets</label><input type="number" data-f="sets" value="${draft.sets}"></div>
+      </div>
+      <div class="field"><label>Rest between sets (sec)</label><input type="number" data-f="restSec" value="${draft.restSec}"></div>`;
+  } else if(draft.kind === "hangboard"){
+    fields = `
+      <div class="row-2">
+        <div class="field"><label>Hang (sec)</label><input type="number" data-f="hangSec" value="${draft.hangSec}"></div>
+        <div class="field"><label>Rest between hangs (sec)</label><input type="number" data-f="restBetweenHangsSec" value="${draft.restBetweenHangsSec}"></div>
+      </div>
+      <div class="row-2">
+        <div class="field"><label>Reps per set</label><input type="number" data-f="repsPerSet" value="${draft.repsPerSet}"></div>
+        <div class="field"><label>Sets</label><input type="number" data-f="sets" value="${draft.sets}"></div>
+      </div>
+      <div class="field"><label>Rest between sets (sec)</label><input type="number" data-f="restBetweenSetsSec" value="${draft.restBetweenSetsSec}"></div>`;
+  } else if(draft.kind === "strength"){
+    fields = `
+      <div class="row-2">
+        <div class="field"><label>Working weight</label><input type="number" step="0.5" data-f="workingWeight" value="${draft.workingWeight}"></div>
+        <div class="field"><label>Unit</label>
+          <select data-f="unit">
+            <option value="kg" ${draft.unit==='kg'?'selected':''}>kg</option>
+            <option value="lb" ${draft.unit==='lb'?'selected':''}>lb</option>
+          </select>
+        </div>
+      </div>
+      <div class="row-3">
+        <div class="field"><label>Working sets</label><input type="number" data-f="sets" value="${draft.sets}"></div>
+        <div class="field"><label>Rep low</label><input type="number" data-f="repLow" value="${draft.repLow}"></div>
+        <div class="field"><label>Rep high</label><input type="number" data-f="repHigh" value="${draft.repHigh}"></div>
+      </div>
+      <div class="field"><label>Rest between working sets (sec)</label><input type="number" data-f="restSec" value="${draft.restSec}"></div>
+      <div class="field">
+        <label>Warm-up ramp (auto: ${state.settings.warmupPercents.join('/')}% × ${state.settings.warmupReps.join('/')} reps)</label>
+        <div class="chip ${draft.warmupEnabled ? 'on':''}" data-act="toggle-field" data-f="warmupEnabled" style="cursor:pointer;display:inline-flex;">${draft.warmupEnabled ? "✓ Warm-up sets enabled" : "Warm-up sets disabled"}</div>
+      </div>`;
+  }
+
+  return `
+  <div class="modal-back" data-act="close-modal">
+    <div class="modal" onclick="event.stopPropagation()">
+      <h2>${isNew || !state.modules[key].find(e=>e.id===draft.id) ? "New Exercise" : "Edit Exercise"}</h2>
+      <div class="field"><label>Name</label><input type="text" data-f="name" value="${draft.name.replace(/"/g,'&quot;')}" placeholder="Exercise name"></div>
+      <div class="field"><label>Type</label>
+        <select data-f="kind">${kindOptions.map(k=>`<option value="${k}" ${draft.kind===k?'selected':''}>${kindLabel[k]}</option>`).join("")}</select>
+      </div>
+      ${fields}
+      <div class="field"><label>Note (optional)</label><textarea data-f="note" placeholder="Form cue, grip, edge size...">${draft.note||""}</textarea></div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" data-act="close-modal">Cancel</button>
+        <button class="btn btn-primary" data-act="save-exercise" data-key="${key}">Save</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   PR TRACKER
+   ============================================================ */
+function allTrackedExercises(){
+  const out = [];
+  for(const key of Object.keys(state.modules)){
+    state.modules[key].forEach(e => { if(e.kind === "strength") out.push(Object.assign({moduleKey:key}, e)); });
+  }
+  return out;
+}
+function est1RM(weight, reps){ return Math.round(weight * (1 + reps/30) * 10)/10; }
+
+function renderPRList(){
+  const exs = allTrackedExercises();
+  const items = exs.map(e => {
+    const logs = state.prs[e.id] || [];
+    const last = logs[logs.length-1];
+    const ready = checkReadyToProgress(logs, e);
+    return `
+    <div class="pr-item" data-act="nav" data-to="#/pr/${e.id}" style="cursor:pointer;">
+      <div class="p-top">
+        <h4>${e.name}</h4>
+        <div class="p-est">${last ? est1RM(last.weight,last.reps)+e.unit+" e1RM" : "—"}</div>
+      </div>
+      <div class="p-meta">${last ? `Last: ${last.weight}${e.unit} × ${last.reps}${last.rpe?(' @ RPE '+last.rpe):''} · ${last.date}` : "No entries yet — log your first set."}</div>
+      ${ready ? `<div class="ready-badge">↑ Ready to progress weight</div>` : ""}
+    </div>`;
+  }).join("");
+
+  return `
+    <div class="topbar"><div class="brand"><span class="dot"></span>PR Tracker</div><div></div></div>
+    <div class="content">
+      <h1 class="page-title">Your Lifts</h1>
+      <p class="page-sub">Every weighted strength exercise auto-appears here. Tap a lift to log a set or see progress.</p>
+      ${items || '<p class="empty">No strength exercises yet. Add one in the Strength Training module.</p>'}
+    </div>`;
+}
+
+function checkReadyToProgress(logs, e){
+  if(logs.length < 3) return false;
+  const last3 = logs.slice(-3);
+  return last3.every(l => l.reps >= (e.repHigh || 12) && (l.rpe == null || l.rpe <= 8));
+}
+
+function renderPRDetail(id){
+  const exs = allTrackedExercises();
+  const e = exs.find(x => x.id === id);
+  if(!e) return renderPRList();
+  const logs = (state.prs[id] || []).slice().sort((a,b)=> a.date.localeCompare(b.date));
+  const ready = checkReadyToProgress(logs, e);
+
+  const chart = logs.length >= 2 ? renderChart(logs) : `<p class="empty">Log at least 2 sets to see a trend.</p>`;
+  const rows = logs.slice().reverse().map(l => `
+    <div class="pr-log-row">
+      <div><b>${l.weight}${e.unit} × ${l.reps}</b> ${l.rpe?(' · RPE '+l.rpe):''}</div>
+      <div class="d">${l.date}</div>
+    </div>`).join("");
+
+  return `
+    <div class="topbar"><button class="back" data-act="nav" data-to="#/prs">‹ PRs</button><div></div></div>
+    <div class="content">
+      <h1 class="page-title">${e.name}</h1>
+      <p class="page-sub">Target: ${e.repLow}-${e.repHigh} reps · working weight ${e.workingWeight}${e.unit}</p>
+      ${ready ? `<div class="ready-badge" style="margin-bottom:14px;">↑ Last 3 sessions all hit target reps at RPE ≤ 8 — try adding weight</div>` : ""}
+      ${chart}
+      <button class="btn btn-primary btn-block" style="margin:16px 0;" data-act="log-pr" data-id="${id}">+ Log a Set</button>
+      <h3 style="font-family:var(--ff-display);text-transform:uppercase;font-size:13px;letter-spacing:.05em;color:var(--stone);margin:20px 0 6px;">History</h3>
+      ${rows || '<p class="empty">No sets logged yet.</p>'}
+    </div>`;
+}
+
+function renderChart(logs){
+  const w = 520, h = 120, pad = 10;
+  const vals = logs.map(l => est1RM(l.weight, l.reps));
+  const min = Math.min(...vals), max = Math.max(...vals);
+  const range = (max - min) || 1;
+  const pts = logs.map((l,i) => {
+    const x = pad + (i/(logs.length-1)) * (w - pad*2);
+    const y = h - pad - ((est1RM(l.weight,l.reps) - min)/range) * (h - pad*2);
+    return [x,y];
+  });
+  const path = pts.map((p,i)=> (i===0?"M":"L")+p[0].toFixed(1)+","+p[1].toFixed(1)).join(" ");
+  const dots = pts.map(p => `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3.5" fill="#E2622B"/>`).join("");
+  return `<svg class="pr-detail-chart" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+    <path d="${path}" fill="none" stroke="#E2622B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    ${dots}
+  </svg>`;
+}
+
+/* ---------------- Log PR modal ---------------- */
+function openLogModal(exId){
+  const exs = allTrackedExercises();
+  const e = exs.find(x=>x.id===exId);
+  modal = {type:"logpr", exId, draft:{weight:e.workingWeight||0, reps:e.repLow||8, rpe:7}};
+  render();
+}
+
+/* ============================================================
+   SETTINGS
+   ============================================================ */
+function renderSettings(){
+  const s = state.settings;
+  return `
+    <div class="topbar"><div class="brand"><span class="dot"></span>Settings</div><div></div></div>
+    <div class="content">
+      <h1 class="page-title">Settings</h1>
+
+      <div class="settings-section">
+        <h3>Units</h3>
+        <div class="unit-toggle">
+          <button class="${s.unit==='kg'?'on':''}" data-act="set-unit" data-unit="kg">kg</button>
+          <button class="${s.unit==='lb'?'on':''}" data-act="set-unit" data-unit="lb">lb</button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h3>Warm-up Ramp (Strength Modules)</h3>
+        <p class="page-sub" style="margin-bottom:10px;">Applied before every PR-tracked lift: 3 progressive sets at increasing % of your working weight, decreasing reps.</p>
+        <div class="row-3">
+          <div class="field"><label>Set 1 %</label><input type="number" data-set="warmupPercents-0" value="${s.warmupPercents[0]}"></div>
+          <div class="field"><label>Set 2 %</label><input type="number" data-set="warmupPercents-1" value="${s.warmupPercents[1]}"></div>
+          <div class="field"><label>Set 3 %</label><input type="number" data-set="warmupPercents-2" value="${s.warmupPercents[2]}"></div>
+        </div>
+        <div class="row-3">
+          <div class="field"><label>Set 1 reps</label><input type="number" data-set="warmupReps-0" value="${s.warmupReps[0]}"></div>
+          <div class="field"><label>Set 2 reps</label><input type="number" data-set="warmupReps-1" value="${s.warmupReps[1]}"></div>
+          <div class="field"><label>Set 3 reps</label><input type="number" data-set="warmupReps-2" value="${s.warmupReps[2]}"></div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h3>Working Set Defaults</h3>
+        <div class="row-3">
+          <div class="field"><label>Sets</label><input type="number" data-set="defaultSets" value="${s.defaultSets}"></div>
+          <div class="field"><label>Rep low</label><input type="number" data-set="defaultRepLow" value="${s.defaultRepLow}"></div>
+          <div class="field"><label>Rep high</label><input type="number" data-set="defaultRepHigh" value="${s.defaultRepHigh}"></div>
+        </div>
+        <div class="field"><label>Rest between working sets (sec)</label><input type="number" data-set="defaultRestSec" value="${s.defaultRestSec}"></div>
+      </div>
+
+      <div class="settings-section">
+        <h3>Your Data</h3>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-ghost" data-act="export-data">Export JSON</button>
+          <button class="btn btn-ghost" data-act="import-data">Import JSON</button>
+          <button class="btn btn-danger" data-act="reset-data">Reset Everything</button>
+        </div>
+        <input type="file" id="importFile" accept="application/json" style="display:none;">
+      </div>
+
+      <p class="page-sub">All data is stored only on this device (localStorage). Nothing is sent anywhere.</p>
+    </div>`;
+}
+
+/* ============================================================
+   SESSION ENGINE
+   ============================================================ */
+function compileSession(key){
+  const list = state.modules[key];
+  const steps = [];
+  list.forEach(e => {
+    if(e.kind === "timed"){
+      for(let s=1; s<=e.sets; s++){
+        steps.push({type:"timer", label:e.name, sub:`Set ${s}/${e.sets}`, seconds:e.timeSec, note:e.note});
+        if(s<e.sets && e.restSec>0) steps.push({type:"timer", label:"Rest", sub:e.name, seconds:e.restSec, isRest:true});
+      }
+    } else if(e.kind === "reps"){
+      for(let s=1; s<=e.sets; s++){
+        steps.push({type:"manual", label:e.name, sub:`Set ${s}/${e.sets} · ${e.reps} reps`, note:e.note});
+        if(s<e.sets && e.restSec>0) steps.push({type:"timer", label:"Rest", sub:e.name, seconds:e.restSec, isRest:true});
+      }
+    } else if(e.kind === "hangboard"){
+      for(let s=1; s<=e.sets; s++){
+        for(let r=1; r<=e.repsPerSet; r++){
+          steps.push({type:"timer", label:e.name, sub:`Set ${s}/${e.sets} · Rep ${r}/${e.repsPerSet}`, seconds:e.hangSec, note:e.note});
+          if(r<e.repsPerSet && e.restBetweenHangsSec>0) steps.push({type:"timer", label:"Rest", sub:e.name, seconds:e.restBetweenHangsSec, isRest:true});
+        }
+        if(s<e.sets && e.restBetweenSetsSec>0) steps.push({type:"timer", label:"Rest Between Sets", sub:e.name, seconds:e.restBetweenSetsSec, isRest:true});
+      }
+    } else if(e.kind === "strength"){
+      if(e.warmupEnabled){
+        const pcts = state.settings.warmupPercents, reps = state.settings.warmupReps;
+        for(let i=0;i<3;i++){
+          const w = Math.round((e.workingWeight * pcts[i]/100) * 2)/2;
+          steps.push({type:"manual", label:e.name, sub:`Warm-up ${i+1}/3 · ${w}${e.unit} × ${reps[i]}`, isWarmup:true});
+          steps.push({type:"timer", label:"Rest", sub:e.name, seconds:60, isRest:true});
+        }
+      }
+      for(let s=1; s<=e.sets; s++){
+        steps.push({type:"manual", label:e.name, sub:`Working Set ${s}/${e.sets} · target ${e.workingWeight}${e.unit} × ${e.repLow}-${e.repHigh}`, isWorking:true, logPR:true, exId:e.id, targetWeight:e.workingWeight, unit:e.unit, repLow:e.repLow, repHigh:e.repHigh});
+        if(s<e.sets && e.restSec>0) steps.push({type:"timer", label:"Rest", sub:e.name, seconds:e.restSec, isRest:true});
+      }
+    }
+  });
+  return steps;
+}
+
+function startSession(key){
+  const steps = compileSession(key);
+  if(steps.length === 0){ alert("Add at least one exercise first."); return; }
+  sessionState = {
+    key, steps, idx:0, running:true, timeLeft: steps[0].type==="timer" ? steps[0].seconds : 0,
+    manualLog: {weight:0, reps:0, rpe:7}
+  };
+  primeManualLog();
+  audioPrimed = false;
+  render();
+  if(sessionState.steps[0].type === "timer") tick();
+}
+
+function primeManualLog(){
+  const step = sessionState.steps[sessionState.idx];
+  if(step && step.logPR){
+    sessionState.manualLog = {weight: step.targetWeight, reps: Math.round((step.repLow+step.repHigh)/2), rpe:7};
+  }
+}
+
+let tickHandle = null;
+function tick(){
+  clearTimeout(tickHandle);
+  if(!sessionState || !sessionState.running) return;
+  const step = sessionState.steps[sessionState.idx];
+  if(step.type !== "timer") return;
+  if(sessionState.timeLeft <= 0){
+    advanceStep();
+    return;
+  }
+  tickHandle = setTimeout(() => {
+    if(!sessionState || !sessionState.running) return;
+    sessionState.timeLeft -= 1;
+    if(sessionState.timeLeft <= 3 && sessionState.timeLeft >= 0) beep(sessionState.timeLeft===0);
+    updateRingOnly();
+    tick();
+  }, 1000);
+}
+
+function advanceStep(){
+  clearTimeout(tickHandle);
+  if(navigator.vibrate) navigator.vibrate(sessionState.steps[sessionState.idx].isRest ? 80 : [80,60,80]);
+  if(sessionState.idx >= sessionState.steps.length - 1){
+    endSession();
+    return;
+  }
+  sessionState.idx += 1;
+  const next = sessionState.steps[sessionState.idx];
+  sessionState.timeLeft = next.type === "timer" ? next.seconds : 0;
+  primeManualLog();
+  render();
+  if(next.type === "timer") tick();
+}
+
+function endSession(){
+  clearTimeout(tickHandle);
+  sessionState = null;
+  nav("#/home");
+  render();
+}
+
+let audioCtx = null, audioPrimed = false;
+function beep(strong){
+  try{
+    if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.frequency.value = strong ? 880 : 440;
+    gain.gain.value = 0.15;
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + (strong?0.25:0.1));
+  }catch(e){}
+}
+
+function updateRingOnly(){
+  const step = sessionState.steps[sessionState.idx];
+  const timeEl = document.getElementById("ringTime");
+  const circle = document.getElementById("ringProgress");
+  if(timeEl) timeEl.textContent = fmtTime(sessionState.timeLeft);
+  if(circle){
+    const total = step.seconds || 1;
+    const frac = Math.max(0, sessionState.timeLeft/total);
+    const circumference = 2*Math.PI*110;
+    circle.style.strokeDashoffset = (circumference * (1-frac)).toFixed(1);
+  }
+}
+
+function renderSession(){
+  const step = sessionState.steps[sessionState.idx];
+  const total = sessionState.steps.length;
+  const segs = sessionState.steps.map((st,i) => `<div class="seg ${i<sessionState.idx?'done':''} ${i===sessionState.idx?'now':''}"></div>`).join("");
+
+  let mid = "";
+  if(step.type === "timer"){
+    const totalSec = step.seconds || 1;
+    const frac = Math.max(0, sessionState.timeLeft/totalSec);
+    const circumference = 2*Math.PI*110;
+    const offset = (circumference * (1-frac)).toFixed(1);
+    mid = `
+      <div class="session-label ${step.isRest?'rest':''}">${step.label}</div>
+      <div class="session-sub">${step.sub || ""}${step.note ? " · " + step.note : ""}</div>
+      <div class="ring-wrap">
+        <svg viewBox="0 0 240 240">
+          <circle cx="120" cy="120" r="110" fill="none" stroke="#38342B" stroke-width="10"/>
+          <circle id="ringProgress" cx="120" cy="120" r="110" fill="none" stroke="${step.isRest?'#7C9070':'#E2622B'}" stroke-width="10" stroke-linecap="round"
+            stroke-dasharray="${(2*Math.PI*110).toFixed(1)}" stroke-dashoffset="${offset}"/>
+        </svg>
+        <div class="ring-time" id="ringTime">${fmtTime(sessionState.timeLeft)}</div>
+      </div>
+      <div class="session-controls">
+        <button class="ctl-round" data-act="s-skip-back">↺</button>
+        <button class="ctl-round" data-act="s-add10">+10s</button>
+        <button class="ctl-main" data-act="s-toggle">${sessionState.running ? "❙❙" : "▶"}</button>
+        <button class="ctl-round" data-act="s-skip">⏭</button>
+      </div>`;
+  } else {
+    const isLog = step.logPR;
+    mid = `
+      <div class="session-label">${step.label}</div>
+      <div class="session-sub">${step.sub || ""}${step.note ? " · " + step.note : ""}</div>
+      <div class="manual-panel">
+        ${isLog ? renderLogPanel() : ""}
+        <button class="manual-btn" data-act="s-manual-done">${isLog ? "Save & Continue" : "Done — Next"}</button>
+      </div>`;
+  }
+
+  return `
+    <div class="session">
+      <div class="session-top">
+        <button class="exit" data-act="s-exit">✕ Exit</button>
+        <div style="font-family:var(--ff-mono);font-size:12px;color:var(--stone);">${sessionState.idx+1} / ${total}</div>
+      </div>
+      <div class="session-progress">${segs}</div>
+      <div class="session-mid">${mid}</div>
+    </div>`;
+}
+
+function renderLogPanel(){
+  const l = sessionState.manualLog;
+  const rpeDots = [4,5,6,7,8,9,10].map(v => `<button class="rpe-dot ${l.rpe===v?'on':''}" data-act="s-set-rpe" data-v="${v}">${v}</button>`).join("");
+  return `
+    <div class="log-fields">
+      <div class="field"><label>Weight</label><input type="number" step="0.5" id="logWeight" value="${l.weight}"></div>
+      <div class="field"><label>Reps</label><input type="number" id="logReps" value="${l.reps}"></div>
+      <div class="field"><label>&nbsp;</label><div style="font-family:var(--ff-mono);color:var(--stone);font-size:12px;padding-top:10px;">actual</div></div>
+    </div>
+    <div class="field" style="margin-top:10px;"><label>Perceived Effort (RPE)</label><div class="rpe-scale">${rpeDots}</div></div>`;
+}
+
+/* ============================================================
+   EVENT HANDLING
+   ============================================================ */
+function attachEvents(){
+  document.body.onclick = (ev) => {
+    const t = ev.target.closest("[data-act]");
+    if(!t) return;
+    const act = t.dataset.act;
+
+    if(act === "nav") { nav(t.dataset.to); return; }
+    if(act === "open-module") { nav("#/module/"+t.dataset.key); return; }
+    if(act === "start-session") { startSession(t.dataset.key); return; }
+    if(act === "close-modal") { modal = null; render(); return; }
+    if(act === "add-exercise") { openAddModal(t.dataset.key); return; }
+    if(act === "new-custom") { modal = {type:"edit", key:t.dataset.key, draft: blankExercise(t.dataset.key)}; render(); return; }
+    if(act === "pick-lib") {
+      const tpl = LIBRARY[modal.key].find(x=>x.name===t.dataset.name);
+      state.modules[modal.key].push(cloneEx(tpl));
+      saveState(); modal=null; render(); return;
+    }
+    if(act === "edit-exercise") { openEditModal(t.dataset.key, t.dataset.id); return; }
+    if(act === "delete-exercise") {
+      if(confirm("Remove this exercise?")){
+        state.modules[t.dataset.key] = state.modules[t.dataset.key].filter(e=>e.id!==t.dataset.id);
+        saveState();
+      }
+      render(); return;
+    }
+    if(act === "move-up" || act === "move-down") {
+      const arr = state.modules[t.dataset.key];
+      const i = arr.findIndex(e=>e.id===t.dataset.id);
+      const j = act === "move-up" ? i-1 : i+1;
+      if(j>=0 && j<arr.length){ [arr[i],arr[j]] = [arr[j],arr[i]]; saveState(); }
+      render(); return;
+    }
+    if(act === "toggle-field") { modal.draft[t.dataset.f] = !modal.draft[t.dataset.f]; render(); return; }
+    if(act === "save-exercise") { saveExerciseFromModal(t.dataset.key); return; }
+    if(act === "log-pr") { openLogModal(t.dataset.id); return; }
+    if(act === "save-log-pr") { saveLogPRFromModal(); return; }
+    if(act === "log-rpe") { modal.draft.rpe = parseInt(t.dataset.v); render(); return; }
+    if(act === "set-unit") { state.settings.unit = t.dataset.unit; saveState(); render(); return; }
+    if(act === "export-data") { exportData(); return; }
+    if(act === "import-data") { document.getElementById("importFile").click(); return; }
+    if(act === "reset-data") {
+      if(confirm("Reset all modules, exercises, and PR history? This cannot be undone.")){
+        state = defaultState(); saveState(); render();
+      }
+      return;
+    }
+    // session controls
+    if(act === "s-exit") { if(confirm("Exit this session?")) endSession(); return; }
+    if(act === "s-toggle") { sessionState.running = !sessionState.running; if(sessionState.running) tick(); render(); return; }
+    if(act === "s-add10") { sessionState.timeLeft += 10; render(); return; }
+    if(act === "s-skip") { advanceStep(); return; }
+    if(act === "s-skip-back") {
+      if(sessionState.idx>0){ sessionState.idx -= 1; const st=sessionState.steps[sessionState.idx]; sessionState.timeLeft = st.type==="timer"?st.seconds:0; primeManualLog(); render(); if(st.type==="timer") tick(); }
+      return;
+    }
+    if(act === "s-manual-done") {
+      const step = sessionState.steps[sessionState.idx];
+      if(step.logPR){
+        const w = parseFloat(document.getElementById("logWeight").value)||0;
+        const r = parseInt(document.getElementById("logReps").value)||0;
+        const rpe = sessionState.manualLog.rpe;
+        savePR(step.exId, w, r, rpe);
+      }
+      advanceStep(); return;
+    }
+    if(act === "s-set-rpe") { sessionState.manualLog.rpe = parseInt(t.dataset.v); render(); return; }
+  };
+
+  document.body.oninput = (ev) => {
+    const t = ev.target;
+    if(t.dataset.f && modal){
+      let v = t.value;
+      if(t.type === "number") v = parseFloat(v);
+      modal.draft[t.dataset.f] = v;
+    }
+    if(t.dataset.set){
+      const [group, idx] = t.dataset.set.split("-");
+      if(idx !== undefined) state.settings[group][idx] = parseFloat(t.value);
+      else state.settings[t.dataset.set] = parseFloat(t.value);
+      saveState();
+    }
+    if(t.id === "logWeight" && sessionState) sessionState.manualLog.weight = parseFloat(t.value)||0;
+    if(t.id === "logReps" && sessionState) sessionState.manualLog.reps = parseInt(t.value)||0;
+  };
+
+  document.body.onchange = (ev) => {
+    const t = ev.target;
+    if(t.dataset.f && modal && t.tagName === "SELECT"){
+      modal.draft[t.dataset.f] = t.value;
+      if(t.dataset.f === "kind"){
+        const key = modal.key;
+        const blank = blankExercise(key === "hangboard" ? "hangboard" : (t.value === "strength" ? "strength" : key));
+        modal.draft = Object.assign({}, blank, {id:modal.draft.id, name:modal.draft.name, kind:t.value, note:modal.draft.note});
+      }
+      render();
+    }
+    if(t.id === "importFile") importData(t);
+  };
+}
+
+function attachSessionEvents(){ attachEvents(); }
+
+function saveExerciseFromModal(key){
+  const d = modal.draft;
+  if(!d.name || !d.name.trim()){ alert("Give the exercise a name."); return; }
+  const arr = state.modules[key];
+  const existingIdx = arr.findIndex(e=>e.id===d.id);
+  if(existingIdx >= 0) arr[existingIdx] = d;
+  else arr.push(d);
+  saveState();
+  modal = null;
+  render();
+}
+
+function savePR(exId, weight, reps, rpe){
+  if(!state.prs[exId]) state.prs[exId] = [];
+  const today = new Date().toISOString().slice(0,10);
+  state.prs[exId].push({date:today, weight, reps, rpe});
+  saveState();
+}
+
+function saveLogPRFromModal(){
+  const d = modal.draft;
+  savePR(modal.exId, parseFloat(d.weight)||0, parseInt(d.reps)||0, d.rpe);
+  modal = null;
+  render();
+}
+
+function exportData(){
+  const blob = new Blob([JSON.stringify(state,null,2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = "send-ready-backup.json";
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+function importData(input){
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      const parsed = JSON.parse(reader.result);
+      if(!parsed.modules || !parsed.settings) throw new Error("bad file");
+      state = parsed;
+      saveState();
+      render();
+      alert("Import complete.");
+    }catch(e){ alert("That file doesn't look like a Send Ready backup."); }
+  };
+  reader.readAsText(file);
+  input.value = "";
+}
+
+/* Log PR modal render override (uses modal.draft directly) */
+const _origRenderModal = renderModal;
+renderModal = function(){
+  if(modal && modal.type === "logpr"){
+    const exs = allTrackedExercises();
+    const e = exs.find(x=>x.id===modal.exId);
+    const d = modal.draft;
+    const rpeDots = [4,5,6,7,8,9,10].map(v => `<button class="rpe-dot ${d.rpe===v?'on':''}" data-act="log-rpe" data-v="${v}">${v}</button>`).join("");
+    return `
+    <div class="modal-back" data-act="close-modal">
+      <div class="modal" onclick="event.stopPropagation()">
+        <h2>Log Set — ${e.name}</h2>
+        <div class="row-2">
+          <div class="field"><label>Weight (${e.unit})</label><input type="number" step="0.5" data-f="weight" value="${d.weight}"></div>
+          <div class="field"><label>Reps</label><input type="number" data-f="reps" value="${d.reps}"></div>
+        </div>
+        <div class="field"><label>Perceived Effort (RPE)</label><div class="rpe-scale">${rpeDots}</div></div>
+        <div class="modal-actions">
+          <button class="btn btn-ghost" data-act="close-modal">Cancel</button>
+          <button class="btn btn-primary" data-act="save-log-pr">Save</button>
+        </div>
+      </div>
+    </div>`;
+  }
+  return _origRenderModal();
+};
+
+</script>
+</body>
+</html>
