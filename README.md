@@ -5,7 +5,26 @@ Rehab (wrist/TFCC/rotator cuff) → Strength Training (PR-tracked) → Cooldown.
 Every exercise is editable, swappable, or fully custom. All data stays on your phone
 (localStorage) — nothing is sent anywhere.
 
-## 1. Install on iPhone
+## 1. Host it on GitHub Pages (free, ~5 minutes)
+
+1. Create a new **public** repo on GitHub (e.g. `send-ready`).
+2. Upload all the files in this folder to the repo root, keeping the structure:
+   ```
+   index.html
+   manifest.json
+   service-worker.js
+   icons/icon-192.png
+   icons/icon-512.png
+   ```
+   Easiest way: on the repo page, click **Add file → Upload files**, drag in
+   everything (including the `icons` folder), then commit.
+3. Go to **Settings → Pages**.
+4. Under **Build and deployment → Source**, choose **Deploy from a branch**.
+5. Branch: `main`, folder: `/ (root)`. Click **Save**.
+6. Wait ~1 minute, then your app is live at:
+   `https://<your-username>.github.io/send-ready/`
+
+## 2. Install on iPhone
 
 1. Open the URL above in **Safari** on your iPhone (must be Safari, not Chrome).
 2. Tap the **Share** icon (square with an arrow) in the toolbar.
@@ -13,7 +32,7 @@ Every exercise is editable, swappable, or fully custom. All data stays on your p
 4. Launch it from the home screen icon — it opens full-screen with no browser
    chrome, and works offline after the first load.
 
-## 2. Using the app
+## 3. Using the app
 
 - **Home** shows the 5 modules in session order. Tap **Start** to run the timer,
   or **Edit** to add/remove/reorder/swap exercises.

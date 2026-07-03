@@ -521,7 +521,7 @@ function renderPickModal(){
     </div>`).join("");
   return `
   <div class="modal-back" data-act="close-modal">
-    <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal">
       <h2>Add Exercise</h2>
       <div class="pick-list">${items}</div>
       <button class="btn btn-block" data-act="new-custom" data-key="${modal.key}">+ Create Custom Exercise</button>
@@ -599,7 +599,7 @@ function renderEditModal(isNew){
 
   return `
   <div class="modal-back" data-act="close-modal">
-    <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal">
       <h2>${isNew || !state.modules[key].find(e=>e.id===draft.id) ? "New Exercise" : "Edit Exercise"}</h2>
       <div class="field"><label>Name</label><input type="text" data-f="name" value="${draft.name.replace(/"/g,'&quot;')}" placeholder="Exercise name"></div>
       <div class="field"><label>Type</label>
@@ -971,6 +971,11 @@ function attachEvents(){
     if(!t) return;
     const act = t.dataset.act;
 
+    // Backdrop close: only fire when the click landed directly on the
+    // backdrop itself, not when it bubbled up from a child (input, button,
+    // text) inside the modal panel that has no data-act of its own.
+    if(act === "close-modal" && t !== ev.target) return;
+
     if(act === "nav") { nav(t.dataset.to); return; }
     if(act === "open-module") { nav("#/module/"+t.dataset.key); return; }
     if(act === "start-session") { startSession(t.dataset.key); return; }
@@ -1129,7 +1134,7 @@ renderModal = function(){
     const rpeDots = [4,5,6,7,8,9,10].map(v => `<button class="rpe-dot ${d.rpe===v?'on':''}" data-act="log-rpe" data-v="${v}">${v}</button>`).join("");
     return `
     <div class="modal-back" data-act="close-modal">
-      <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal">
         <h2>Log Set — ${e.name}</h2>
         <div class="row-2">
           <div class="field"><label>Weight (${e.unit})</label><input type="number" step="0.5" data-f="weight" value="${d.weight}"></div>
