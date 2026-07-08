@@ -1,13 +1,13 @@
 {
-  "name": "Send Ready — Boulder Training",
+  "name": "Send Ready — Training Log",
   "short_name": "Send Ready",
-  "description": "Warm-up, hangboard, rehab, strength, and cooldown timers for bouldering training.",
+  "description": "PR logger with double-progression tracking, plus a warm-up and rehab reference library for hangboarding.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#1C1B19",
-  "theme_color": "#1C1B19",
+  "background_color": "#0E1116",
+  "theme_color": "#0E1116",
   "icons": [
     { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
     { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }

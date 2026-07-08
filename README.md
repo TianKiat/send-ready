@@ -1,14 +1,42 @@
-# Send Ready — Boulder Training PWA
+# Send Ready — Training Log (v3)
 
-A fully offline, installable training timer for bouldering: Warm-Up → Fingerboard →
-Rehab (wrist/TFCC/rotator cuff) → Strength Training (PR-tracked) → Cooldown.
-Every exercise is editable, swappable, or fully custom. All data stays on your phone
-(localStorage) — nothing is sent anywhere.
+A simple, offline PR logger built around **double progression**, plus a
+warm-up / rehab reference library for hangboarding. No timers — iOS suspends
+background timers when the screen sleeps, so you time your own sets and the app
+just records them and does the progression math. All data stays on your phone;
+nothing is sent anywhere.
 
-## 1. Host it on GitHub Pages (free, ~5 minutes)
+## What it does
 
-1. Create a new **public** repo on GitHub (e.g. `send-ready`).
-2. Upload all the files in this folder to the repo root, keeping the structure:
+**Lifts (PR logger)**
+- Each lift has a rep range (e.g. 8–12), a current weight, and a weight mode:
+  **Total load** or **Per side** (for iso-lateral machines).
+- Log a session: the weight used, and the reps you hit **per set** (to failure),
+  with an optional RPE per set.
+- The app shows your latest session front and center — weight, sets, reps per
+  set, effort — and where you sit in the rep range.
+- When **every** working set reaches the top of the range, the lift flags
+  "Ready to add weight" and a one-tap **Move up** bumps the weight by your
+  increment. You then restart at the bottom of the range at the heavier load.
+- Estimated-1RM trend chart and full session history per lift.
+
+**Library**
+- Reference cards for pulse/general warm-up, wrist & forearm prep, rotator cuff
+  activation, a fingerboard warm-up progression, and rehab for wrist/TFCC and
+  fingers/pulleys. Suggested doses are text — you time and count them yourself.
+
+**Also**: light / dark / auto themes, liquid-glass UI, drag-to-reorder lifts,
+JSON export/import backup.
+
+Upgrading from an earlier version: your strength exercises, working weights,
+rep ranges, and logged PR history migrate automatically into lifts on first
+load. Only strength/PR-tracked exercises carry over (the old timed warm-up and
+rehab modules are replaced by the static Library).
+
+## Host on GitHub Pages
+
+1. Create a **public** repo (e.g. `send-ready`).
+2. Upload these files to the repo root, keeping the structure:
    ```
    index.html
    manifest.json
@@ -16,42 +44,29 @@ Every exercise is editable, swappable, or fully custom. All data stays on your p
    icons/icon-192.png
    icons/icon-512.png
    ```
-   Easiest way: on the repo page, click **Add file → Upload files**, drag in
-   everything (including the `icons` folder), then commit.
-3. Go to **Settings → Pages**.
-4. Under **Build and deployment → Source**, choose **Deploy from a branch**.
-5. Branch: `main`, folder: `/ (root)`. Click **Save**.
-6. Wait ~1 minute, then your app is live at:
-   `https://<your-username>.github.io/send-ready/`
+3. **Settings → Pages → Deploy from a branch → `main` / `/ (root)` → Save**.
+4. Live at `https://<your-username>.github.io/send-ready/` after ~1 minute.
 
-## 2. Install on iPhone
+## Install on iPhone
 
-1. Open the URL above in **Safari** on your iPhone (must be Safari, not Chrome).
-2. Tap the **Share** icon (square with an arrow) in the toolbar.
-3. Tap **Add to Home Screen**, then **Add**.
-4. Launch it from the home screen icon — it opens full-screen with no browser
-   chrome, and works offline after the first load.
+Open the URL in **Safari** → **Share** → **Add to Home Screen** → **Add**.
+Launches full-screen and works offline.
 
-## 3. Using the app
+Already installed? Push the new files; the service worker cache is bumped to v3,
+so it updates on the next launch or two (force-quit and reopen if needed).
 
-- **Home** shows the 5 modules in session order. Tap **Start** to run the timer,
-  or **Edit** to add/remove/reorder/swap exercises.
-- Tap the **✎** on any exercise to change its sets, reps, rest, weight, or type,
-  or tap **+ Add Exercise** to pick from the built-in library or create a fully
-  custom one.
-- In **Strength Training**, mark an exercise as a "Weighted Strength (PR)" type
-  to get the automatic 3-set warm-up ramp (default 50/70/80% × 6/4/2 reps,
-  editable in Settings) before your working sets.
-- Working sets prompt you to log actual weight/reps/RPE — this feeds the
-  **PR tracker** tab, which shows an estimated 1RM trend chart per lift and a
-  "ready to progress" nudge once your last 3 sessions all hit top-of-range reps
-  at RPE ≤ 8.
-- **Settings** lets you switch kg/lb, edit the default warm-up ramp and working
-  set scheme, and export/import a JSON backup of everything.
+## The progression model, briefly
 
-## Notes
+Pick a rep range and a weight. Train every working set to failure. When all
+sets reach the top of the range, add weight and drop back to the bottom of the
+range. Repeat. A few notes baked into how the app nudges you:
 
-- The Rehab module includes a general-information disclaimer — it's not a
-  substitute for a physiotherapist, especially for an active TFCC injury.
-- If you ever want a clean slate, use **Settings → Reset Everything** (or just
-  delete and reinstall).
+- The "ready" trigger requires **all** sets at the top, not just the first —
+  more conservative, avoids stalling a session or two later.
+- Expect to land near/below the bottom of the range right after a jump. That's
+  the reset, not a regression.
+- On machines, microloading makes the reset gentler if a full pin jump is too
+  big.
+
+*Library content is general guidance, not medical advice — see a physio for an
+unresolved or worsening injury.*
