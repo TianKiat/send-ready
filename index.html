@@ -130,7 +130,7 @@ p.page-sub{color:var(--muted);font-size:14px;line-height:1.55;margin:0 0 18px;}
 /* ---------- Lift list ---------- */
 .lift-card{display:flex;align-items:stretch;gap:2px;padding:14px 14px 14px 4px;margin-bottom:12px;transition:transform .18s ease;}
 .lift-card.dragging{z-index:30;transform:scale(1.02);box-shadow:0 16px 40px rgba(0,0,0,.28);transition:none;}
-.drag-handle{width:38px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--muted);font-size:17px;touch-action:none;cursor:grab;border-radius:12px;user-select:none;-webkit-user-select:none;}
+.drag-handle{width:42px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--muted);font-size:17px;touch-action:none;cursor:grab;border-radius:12px;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;-webkit-user-drag:none;}
 .drag-handle:active{color:var(--accent);}
 .lift-body{flex:1;min-width:0;}
 .lift-head{display:flex;align-items:center;justify-content:space-between;gap:8px;}
@@ -1090,28 +1090,46 @@ function renderRehabSessionModal(){
 }
 
 /* ============================================================
-   DRAG & DROP (pointer-based, folder-merge aware)
+   DRAG & DROP (touch + mouse based, folder-merge aware)
+   Deliberately NOT using the Pointer Events API here — setPointerCapture
+   has real reliability gaps on iOS Safari / installed-PWA WKWebView, where
+   it can silently swallow the gesture (no pointermove ever arrives) instead
+   of throwing, which looks exactly like "nothing happens." touchstart/
+   touchmove/touchend is the far more battle-tested path on iOS.
    ============================================================ */
-let drag = null;
-let suppressClickUntil = 0;
+var drag = null;
+var suppressClickUntil = 0;
 function attachDragHandles(){
-  document.querySelectorAll("[data-drag-handle]").forEach(h => { h.onpointerdown = dragStart; });
+  document.querySelectorAll("[data-drag-handle]").forEach(h => {
+    h.addEventListener("touchstart", dragStart, {passive:false});
+    h.addEventListener("mousedown", dragStart);
+  });
+}
+function eventY(e){
+  if(e.touches && e.touches.length) return e.touches[0].clientY;
+  if(e.changedTouches && e.changedTouches.length) return e.changedTouches[0].clientY;
+  return e.clientY;
 }
 function dragStart(e){
   if(drag) return;
-  e.preventDefault();
   const handle = e.currentTarget;
   const card = handle.closest("[data-drag-id]");
   if(!card) return;
+  e.preventDefault();
+  const isTouch = e.type === "touchstart";
   drag = {
-    card, container:card.parentElement, pointerId:e.pointerId, startY:e.clientY, shift:0, moved:false,
-    kind: card.dataset.dragKind, mergeTargetEl:null, mergeTargetId:null
+    card, container:card.parentElement, startY:eventY(e), shift:0, moved:false, isTouch,
+    kind: card.dataset.dragKind, mergeTargetEl:null, mergeTargetId:null, mergeArmed:false, hoverSince:0
   };
-  try{ handle.setPointerCapture(e.pointerId); }catch(err){}
   card.classList.add("dragging");
-  window.addEventListener("pointermove", dragMove, {passive:false});
-  window.addEventListener("pointerup", dragEnd);
-  window.addEventListener("pointercancel", dragEnd);
+  if(isTouch){
+    window.addEventListener("touchmove", dragMove, {passive:false});
+    window.addEventListener("touchend", dragEnd);
+    window.addEventListener("touchcancel", dragEnd);
+  } else {
+    window.addEventListener("mousemove", dragMove);
+    window.addEventListener("mouseup", dragEnd);
+  }
 }
 function gapOf(container){ const st = getComputedStyle(container.children[0]||container); return parseFloat(st.marginBottom)||0; }
 function flipTo(el, fromTop){
@@ -1120,14 +1138,13 @@ function flipTo(el, fromTop){
   el.style.transition = "none"; el.style.transform = `translateY(${dt}px)`;
   requestAnimationFrame(() => { el.style.transition = "transform .18s ease"; el.style.transform = ""; setTimeout(()=>{ el.style.transition=""; },200); });
 }
+const MERGE_DWELL_MS = 380; // how long you must pause over a target before it "arms" as a folder-merge
 function dragMove(e){
-  if(!drag || e.pointerId !== drag.pointerId) return;
+  if(!drag) return;
   e.preventDefault();
-  const delta = e.clientY - drag.startY;
+  const delta = eventY(e) - drag.startY;
   if(Math.abs(delta) > 4) drag.moved = true;
   drag.card.style.transform = `translateY(${delta - drag.shift}px) scale(1.02)`;
-
-  if(drag.mergeTargetEl){ drag.mergeTargetEl.classList.remove("drop-target"); drag.mergeTargetEl = null; drag.mergeTargetId = null; }
 
   // Only lifts dragged within the top-level list can merge into a folder —
   // reordering inside an already-open folder just reorders (no nested folders).
@@ -1135,19 +1152,33 @@ function dragMove(e){
   const cRect = drag.card.getBoundingClientRect();
   const cMid = cRect.top + cRect.height/2;
 
+  let hoverEl = null, hoverId = null;
   if(mergeEnabled){
     const candidates = [drag.card.nextElementSibling, drag.card.previousElementSibling];
     for(const sib of candidates){
       if(!sib || !sib.hasAttribute("data-drag-id")) continue;
       const r = sib.getBoundingClientRect();
-      const zoneTop = r.top + r.height*0.25, zoneBottom = r.top + r.height*0.75;
-      if(cMid > zoneTop && cMid < zoneBottom){
-        drag.mergeTargetEl = sib; drag.mergeTargetId = sib.dataset.dragId;
-        sib.classList.add("drop-target");
-        if(navigator.vibrate) navigator.vibrate(6);
-        return; // hovering a merge target — freeze reordering until it moves off
-      }
+      const zoneTop = r.top + r.height*0.3, zoneBottom = r.top + r.height*0.7;
+      if(cMid > zoneTop && cMid < zoneBottom){ hoverEl = sib; hoverId = sib.dataset.dragId; break; }
     }
+  }
+
+  if(hoverEl){
+    if(drag.mergeTargetEl !== hoverEl){
+      // just arrived over a new candidate — (re)start the dwell timer, not armed yet
+      if(drag.mergeTargetEl) drag.mergeTargetEl.classList.remove("drop-target");
+      drag.mergeTargetEl = hoverEl; drag.mergeTargetId = hoverId; drag.hoverSince = Date.now(); drag.mergeArmed = false;
+    }
+    if(!drag.mergeArmed && Date.now() - drag.hoverSince >= MERGE_DWELL_MS){
+      drag.mergeArmed = true;
+      hoverEl.classList.add("drop-target");
+      if(navigator.vibrate) navigator.vibrate(15);
+    }
+    if(drag.mergeArmed) return; // locked onto a merge target — pause reordering until they move off
+    // still within the dwell window: fall through so a quick pass-through keeps reordering normally
+  } else if(drag.mergeTargetEl){
+    drag.mergeTargetEl.classList.remove("drop-target");
+    drag.mergeTargetEl = null; drag.mergeTargetId = null; drag.mergeArmed = false;
   }
 
   let next = drag.card.nextElementSibling;
@@ -1174,13 +1205,18 @@ function dragMove(e){
   }
 }
 function dragEnd(e){
-  if(!drag || (e.pointerId !== undefined && e.pointerId !== drag.pointerId)) return;
-  const {card, container, moved, mergeTargetEl, mergeTargetId} = drag;
+  if(!drag) return;
+  const {card, container, moved, mergeTargetEl, mergeTargetId, mergeArmed, isTouch} = drag;
   card.classList.remove("dragging"); card.style.transform = "";
   if(mergeTargetEl) mergeTargetEl.classList.remove("drop-target");
-  window.removeEventListener("pointermove", dragMove);
-  window.removeEventListener("pointerup", dragEnd);
-  window.removeEventListener("pointercancel", dragEnd);
+  if(isTouch){
+    window.removeEventListener("touchmove", dragMove);
+    window.removeEventListener("touchend", dragEnd);
+    window.removeEventListener("touchcancel", dragEnd);
+  } else {
+    window.removeEventListener("mousemove", dragMove);
+    window.removeEventListener("mouseup", dragEnd);
+  }
   const draggedRawId = card.dataset.dragId;
   const isTop = container.id === "topList";
   const groupId = container.dataset.groupContainer;
@@ -1189,7 +1225,7 @@ function dragEnd(e){
 
   suppressClickUntil = Date.now() + 350;
 
-  if(mergeTargetId){
+  if(mergeArmed && mergeTargetId){
     performMerge(draggedRawId, mergeTargetId);
     return;
   }

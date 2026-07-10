@@ -1,4 +1,4 @@
-const CACHE_NAME = "send-ready-v5";
+const CACHE_NAME = "send-ready-v6";
 const ASSETS = [
   "./",
   "./index.html",
